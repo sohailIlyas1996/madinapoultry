@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/style/login.css">
+
+</head>
+<script>
+    function submitForm() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Create an object to store the form data
+        const formData = {
+            username: username,
+            password: password
+        };
+
+        // Print form data to the console
+        console.log(formData);
+
+        // If you want to send this data to the server, you can use fetch or AJAX here
+        // Example using fetch:
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle the response from the server if needed
+            console.log('Response from server:', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
+
+<body>
+    <div class="wrapper">
+
+        <div class="heading">
+        <h2>Welcome!</h2>
+        <p>Sign In to your account</p>
+        </div>
+        <form action="/login" method="POST">
+            <div class="input-group">
+                <input type="text" name="username" class="input-field" placeholder="Username">
+            </div>
+            <div class="input-group">
+                <input type="password" name="password" class="input-field" placeholder="Password">
+            </div>
+            <div class="input-group">
+                <button type="submit">Login <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </form>
+        
+        
+        
+     
+        
+        </div>
+        
+       
+        
+</body>
+</html>

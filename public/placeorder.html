@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Order Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      background-color: white;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    input[type="number"] {
+      width: 50px;
+    }
+
+    button {
+      padding: 8px 15px;
+      cursor: pointer;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    #totalAmount {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    #totalAmount span {
+      font-weight: bold;
+    }
+
+    button#placeOrderBtn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button#placeOrderBtn:hover {
+      background-color: #219a52;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Order Page</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Add to Cart</th>
+      </tr>
+    </thead>
+    <tbody id="productList">
+      <!-- Product items will be dynamically populated here -->
+    </tbody>
+  </table>
+
+  <div id="totalAmount">
+    <p>Total Amount: $<span id="totalPrice">0</span></p>
+    <p>Total Items in Cart: <span id="totalItems">0</span></p>
+  </div>
+
+  <button id="placeOrderBtn" onclick="placeOrder()">Place Order</button>
+
+  <script>
+    const productList = document.getElementById('productList');
+    const totalPriceDisplay = document.getElementById('totalPrice');
+    const totalItemsDisplay = document.getElementById('totalItems');
+    let cart = [];
+
+    // Fetch products from the backend
+    fetch('/allproducts')
+      .then(response => response.json())
+      .then(products => {
+        products.forEach(product => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${product.name}</td>
+            <td>$${product.price}</td>
+            <td><input type="number" id="quantity_${product._id}" min="1" value="1"></td>
+            <td><button onclick="addToCart('${product._id}', '${product.name}', ${product.price})">Add to Cart</button></td>
+          `;
+          productList.appendChild(row);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching products:', error);
+      });
+
+    function addToCart(productId, productName, productPrice) {
+      const selectedQuantity = document.getElementById(`quantity_${productId}`).value;
+      cart.push({ productId, productName, productPrice, quantity: parseInt(selectedQuantity) });
+      updateTotalAmount();
+      updateTotalItems();
+    }
+
+    function updateTotalAmount() {
+      let total = 0;
+      cart.forEach(item => {
+        total += item.productPrice * item.quantity;
+      });
+      totalPriceDisplay.textContent = total.toFixed(2);
+    }
+
+    function updateTotalItems() {
+      totalItemsDisplay.textContent = cart.length;
+    }
+
+    function placeOrder() {
+      // Send the cart data to the server to save in the order model
+      fetch('/createOrder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ products: cart })
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('Failed to create order');
+      })
+      .then(data => {
+        console.log('Order created:', data);
+        // Show an alert when order is placed successfully
+        alert('Order placed successfully!');
+        // Reset fields after placing order
+        resetFields();
+      })
+      .catch(error => {
+        console.error('Error creating order:', error);
+        // Handle error: Display error message to the user
+      });
+    }
+
+    function resetFields() {
+      // Clear the cart array
+      cart = [];
+      // Update total amount and total items displays
+      updateTotalAmount();
+      updateTotalItems();
+      // Reset input fields
+      const quantityInputs = document.querySelectorAll('input[type="number"]');
+      quantityInputs.forEach(input => {
+        input.value = 1;
+      });
+    }
+  </script>
+</body>
+</html>

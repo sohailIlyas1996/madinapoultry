@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Products</title>
+  <style>
+    /* Styles for the product list */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      background-color: #fff;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .edit-form {
+      margin-top: 10px;
+      display: none;
+    }
+
+    .edit-form input[type="submit"] {
+      margin-top: 8px;
+      padding: 6px 12px;
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .edit-form input[type="submit"]:hover {
+      background-color: #45a049;
+    }
+
+    .delete-btn {
+      padding: 6px 12px;
+      background-color: #e53935;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .delete-btn:hover {
+      background-color: #c62828;
+    }
+
+    /* Style for the "Edit" button */
+    .edit-btn {
+      padding: 6px 12px;
+      background-color: #ffeb3b; /* Yellow color */
+      color: #333;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .edit-btn:hover {
+      background-color: #fdd835; /* Darker yellow on hover */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>All Products</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Category</th>
+          <th>Quantity</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="productTableBody">
+        <!-- Product data will be inserted here dynamically -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Function to toggle between showing/hiding edit form
+    const toggleEditForm = (productId) => {
+      const editForm = document.getElementById(`editForm-${productId}`);
+      const currentDisplayStyle = editForm.style.display;
+
+      editForm.style.display = currentDisplayStyle === 'none' || currentDisplayStyle === '' ? 'block' : 'none';
+    };
+
+    // Function to handle product deletion
+    const deleteProduct = (productId) => {
+      // Send an HTTP request to delete the product by ID
+      fetch(`/deleteProduct/${productId}`, {
+        method: 'DELETE'
+      })
+      .then(response => {
+        if (response.ok) {
+          // Refresh the page after successful deletion
+          window.location.reload();
+        } else {
+          console.error('Error deleting product');
+        }
+      })
+      .catch(error => console.error('Error deleting product:', error));
+    };
+
+    // Fetch and display products from the backend API
+    window.onload = () => {
+      fetch('/allproducts') // Replace '/allproducts' with your actual endpoint
+        .then(response => response.json())
+        .then(data => {
+          const productTableBody = document.getElementById('productTableBody');
+          data.forEach(product => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${product.name}</td>
+              <td>${product.description}</td>
+              <td>${product.price}</td>
+              <td>${product.category}</td>
+              <td>${product.quantity}</td>
+              <td>
+                <button class="edit-btn" onclick="toggleEditForm('${product._id}')">Edit</button>
+                <button class="delete-btn" onclick="deleteProduct('${product._id}')">Delete</button>
+                <form id="editForm-${product._id}" class="edit-form" action="/updateProduct/${product._id}" method="POST" style="display: none;">
+                  <!-- The edit form content -->
+                  <label for="editName-${product._id}">Name:</label>
+                  <input type="text" id="editName-${product._id}" name="name" value="${product.name}">
+                  
+                  <label for="editDescription-${product._id}">Description:</label>
+                  <textarea id="editDescription-${product._id}" name="description">${product.description}</textarea>
+                  
+                  <label for="editPrice-${product._id}">Price:</label>
+                  <input type="number" id="editPrice-${product._id}" name="price" value="${product.price}" min="0" step="0.01">
+                  
+                  <label for="editCategory-${product._id}">Category:</label>
+                  <input type="text" id="editCategory-${product._id}" name="category" value="${product.category}">
+                  
+                  <label for="editQuantity-${product._id}">Quantity:</label>
+                  <input type="number" id="editQuantity-${product._id}" name="quantity" value="${product.quantity}" min="0">
+                  
+                  <input type="submit" value="Update">
+                </form>
+              </td>
+            `;
+            productTableBody.appendChild(row);
+          });
+        })
+        .catch(error => console.error('Error fetching products:', error));
+    };
+  </script>
+</body>
+</html>

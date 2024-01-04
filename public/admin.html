@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+   /* Style for the edit product button */
+   .edit-product-btn {
+            margin: 10px;
+            padding: 15px 30px;
+            background-color: #FF0000; /* Red */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+        .add-product-btn {
+            margin: 10px;
+            padding: 15px 30px;
+            background-color: #4CAF50; /* Red */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+        }
+        .order-product-btn {
+            margin: 10px;
+            padding: 15px 30px;
+            background-color: #4CAF50; /* Red */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background-color 0.3s;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+        }
+
+
+        .edit-product-btn:hover {
+            background-color: #CC0000; /* Darker red on hover */
+        }
+
+        .add-product-btn:hover {
+            background-color: #07cc00; /* Darker red on hover */
+        }
+
+
+        .order-product-btn:hover {
+            background-color: #0055cc; /* Darker red on hover */
+
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .option-btn {
+            margin: 5px;
+            padding: 15px; /* Increased padding */
+            border: none;
+            border-radius: 8px; /* Increased border radius */
+            cursor: pointer;
+            font-size: 20px; /* Increased font size */
+            transition: background-color 0.3s;
+            width: 250px; /* Increased button width */
+        }
+
+        .all-products {
+            background-color: #2196F3; /* Blue */
+            color: white;
+        }
+
+        .all-admins {
+            background-color: #FF9800; /* Orange */
+            color: white;
+        }
+
+        .place-order {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel</h1>
+        <button class="option-btn all-products">ALL PRODUCTS</button>
+        <button class="option-btn all-admins">ALL ADMINS </button>
+        <button class="option-btn place-order">PLACED ORDERS</button>
+        
+
+        <!-- Three tables for displaying data -->
+        <table id="allProductsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <table id="allAdminsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Username</th>
+                  
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <table id="placeOrderTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>ORDER ID</th>
+                    <th>TOTAL</th>
+                    <th>DATE</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        
+    </div>
+<div>
+    <button class="edit-product-btn" onclick="redirectToAllProducts()">Edit Product</button>
+</div>
+<div>
+    <button class="add-product-btn" onclick="redirectToAllProductsPage()">Add Products</button>
+</div>
+
+<div>
+    <button class="order-product-btn" onclick="redirectToAllorderPage()">PLACE ORDER</button>
+</div>
+
+    <script>
+        // Function to fetch and display data based on options
+        const displayData = (option) => {
+            // Hiding all tables
+            document.getElementById('allProductsTable').style.display = 'none';
+            document.getElementById('allAdminsTable').style.display = 'none';
+            document.getElementById('placeOrderTable').style.display = 'none';
+
+            if (option === 'all-products') {
+                document.getElementById('allProductsTable').style.display = 'table';
+                fetch('/allproducts')
+                    .then(response => response.json())
+                    .then(products => {
+                        const dataDisplay = document.getElementById('allProductsTable').getElementsByTagName('tbody')[0];
+                        dataDisplay.innerHTML = ''; // Clear existing data
+
+                        // Display product data
+                        products.forEach(product => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${product.name}</td>
+                                <td>${product.description}</td>
+                                <td>${product.price}</td>
+                                <td>${product.category}</td>
+                                <td>${product.quantity}</td>
+                            `;
+                            dataDisplay.appendChild(row);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching product data:', error);
+                    });
+            } else if (option === 'all-admins') {
+                document.getElementById('allAdminsTable').style.display = 'table';
+                fetch('/allstudents')
+                    .then(response => response.json())
+                    .then(admins => {
+                        const dataDisplay = document.getElementById('allAdminsTable').getElementsByTagName('tbody')[0];
+                        dataDisplay.innerHTML = ''; // Clear existing data
+
+                        // Display admin data
+                        admins.forEach(admin => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${admin.name}</td>
+                                <td>${admin.username}</td>
+                                
+                            `;
+                            dataDisplay.appendChild(row);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching admin data:', error);
+                    });
+            } else if (option === 'place-order') {
+    document.getElementById('placeOrderTable').style.display = 'table';
+
+    fetch('/allorders')
+        .then(response => response.json())
+        .then(orders => {
+            const ordersDisplay = document.getElementById('placeOrderTable').getElementsByTagName('tbody')[0];
+            ordersDisplay.innerHTML = '';
+
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                const orderDate = new Date(order.orderDate);
+const year = orderDate.getFullYear();
+const month = String(orderDate.getMonth() + 1).padStart(2, '0'); // Adding 1 and padding month with zero if needed
+const day = String(orderDate.getDate()).padStart(2, '0'); // Padding day with zero if needed
+
+const formattedDate = `${year}-${month}-${day}`;
+
+                // Format the products for display
+           //     const productsFormatted = order.products.map(product => `${product.productName} (Qty: ${product.quantity})`).join('<br>');
+
+                // Create table row with formatted data
+                row.innerHTML = `
+                    <td>${order._id}</td>
+                    <td>${order.totalAmount}</td>
+                    <td>${formattedDate}</td>
+                    
+                `;
+                ordersDisplay.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching order data:', error);
+        });
+    // Code to handle placing an order
+    // Replace with your backend endpoint and logic
+}
+
+        };
+
+        // Event listeners for the options
+        document.querySelector('.all-products').addEventListener('click', () => {
+            displayData('all-products');
+        });
+
+        document.querySelector('.all-admins').addEventListener('click', () => {
+            displayData('all-admins');
+        });
+
+        document.querySelector('.place-order').addEventListener('click', () => {
+            displayData('place-order');
+        });
+    </script>
+
+<script>
+    // Function to redirect to the specified URL
+    function redirectToAllProducts() {
+        window.location.href = './showallproducts';
+    }
+    function redirectToAllProductsPage(){
+        window.location.href = './addproducts';
+    }
+    function  redirectToAllorderPage(){
+        window.location.href = './order';
+
+    }
+    // Function to fetch and display data based on options
+    // ... (Rest of your JavaScript code)
+</script>
+</body>
+</html>
