@@ -45,18 +45,18 @@ app.get('/', (req, res) => {
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
   });
-  app.get('/order', (req, res) => {
+  app.get('/order',isAuthenticated, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'placeorder.html'));
   });
 
-app.get('/admin', (req, res) => {
+app.get('/admin',isAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
 app.get('/addstock', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'addstock.html'));
 });
-app.get('/addproducts', (req, res) => {
+app.get('/addproducts', isAuthenticated,(req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'product.html'));
 });
 
@@ -136,7 +136,7 @@ app.post('/login', (req, res, next) => {
 });
 
 
-app.post('/registerStudent', function(req, res) {
+app.post('/registerStudent',isAuthenticated, function(req, res) {
   const {  name,username,password,studentId,className } = req.body;
   console.log( name,username,password,studentId,className);
   const studentData = new studentModel({ name,username,password,studentId,className });
@@ -154,7 +154,7 @@ app.post('/registerStudent', function(req, res) {
   });
 });
 
-app.post('/addProduct', async (req, res) => {
+app.post('/addProduct', isAuthenticated,async (req, res) => {
   const { name, description, price, category, quantity } = req.body;
 
   try {
@@ -221,7 +221,7 @@ console.log(productId);
     res.status(500).send('Error deleting product');
   }
 });
-app.post('/createOrder', async (req, res) => {
+app.post('/createOrder',isAuthenticated, async (req, res) => {
   const { products } = req.body;
 
   try {
@@ -247,6 +247,31 @@ app.post('/createOrder', async (req, res) => {
   }
 });
 
+
+function isAuthenticated(req, res, next) {
+  // Passport.js adds the `req.isAuthenticated()` method
+  // This method returns true if the user is authenticated, otherwise false
+  if (req.isAuthenticated()) {
+    return next(); // User is authenticated, proceed to the next middleware
+  }
+  
+  // User is not authenticated, redirect them to the login page or show an error message
+  res.redirect('/login'); // Redirect to your login route
+}
+
+
+app.get('/logout', (req, res) => {
+  // Passport.js method to log out the user with a callback function
+  req.logout((err) => {
+    if (err) {
+      // Handle any potential errors during logout
+      console.error(err);
+      return res.redirect('/'); // Redirect to the home page or an error page
+    }
+    // If logout is successful, redirect the user to the login page
+    res.redirect('/login');
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 
