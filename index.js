@@ -7,7 +7,7 @@ const flash=require('connect-flash');
 const app = express();
 const mongoose = require('mongoose');
 const studentModel = require('./studen'); // Import your student model
-
+const multer = require('multer');
 const productModel = require('./prod'); 
 const orderModel = require('./order');
 const { log } = require('console');
@@ -15,6 +15,7 @@ const { log } = require('console');
 passport.use('student-local', new localStrategy(studentModel.authenticate()));
 
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(flash());
 app.use(expressSession({
@@ -36,6 +37,9 @@ app.use(express.json());
 
 // Serving static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+
 
 // Handling the root route ('/')
 app.get('/', (req, res) => {
@@ -154,7 +158,46 @@ app.post('/registerStudent',isAuthenticated, function(req, res) {
   });
 });
 
-app.post('/addProduct', isAuthenticated,async (req, res) => {
+// app.post('/addProduct', isAuthenticated,async (req, res) => {
+//   const { name, description, price, category, quantity } = req.body;
+
+//   try {
+//     // Create a new product instance based on the Product model
+//     const newProduct = new productModel({
+//       name,
+//       description,
+//       price,
+//       category,
+//       quantity
+//     });
+//     console.log(newProduct);
+
+//     // Save the new product to the database
+//     await newProduct.save();
+
+//     res.redirect('./showallproducts');
+//   } catch (error) {
+//     console.error('Error adding product:', error);
+//     res.status(500).json({ error: 'Error adding product' });
+//   }
+// });
+
+
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Save uploaded images to the 'uploads' directory
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname)); // Rename file with a unique name
+  }
+});
+
+// Create multer instance with defined storage
+const upload = multer({ storage: storage });
+
+// Handle POST request for adding a new product with image upload
+app.post('/addProduct', isAuthenticated, upload.single('image'), async (req, res) => {
   const { name, description, price, category, quantity } = req.body;
 
   try {
@@ -164,9 +207,12 @@ app.post('/addProduct', isAuthenticated,async (req, res) => {
       description,
       price,
       category,
-      quantity
+      quantity,
+      image: {
+        path: req.file.filename, // Save the filename of the uploaded image
+        extension: req.file.originalname.split('.').pop() // Extract and save the file extension
+      }
     });
-    console.log(newProduct);
 
     // Save the new product to the database
     await newProduct.save();
@@ -177,8 +223,6 @@ app.post('/addProduct', isAuthenticated,async (req, res) => {
     res.status(500).json({ error: 'Error adding product' });
   }
 });
-
-
 app.post('/updateProduct/:id', async (req, res) => {
   const productId = req.params.id; // Extract the product ID from the request parameters
 
